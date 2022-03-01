@@ -4,7 +4,7 @@
 pragma solidity =0.8.11;
 
 //  libraries
-import { Address } from "@openzeppelin/contracts/utils/Address.sol";
+import { Address } from "@openzeppelin/contracts-0.8.x/utils/Address.sol";
 
 // helpers
 import { AdapterModifiersBase } from "../../utils/AdapterModifiersBase.sol";
@@ -13,7 +13,7 @@ import { AdapterModifiersBase } from "../../utils/AdapterModifiersBase.sol";
 import { ICurveLiquidityGaugeV3 } from "@optyfi/defi-legos/ethereum/curve/contracts/ICurveLiquidityGaugeV3.sol";
 import { ICurveRegistry } from "@optyfi/defi-legos/ethereum/curve/contracts/interfacesV0/ICurveRegistry.sol";
 import { ICurveAddressProvider } from "@optyfi/defi-legos/ethereum/curve/contracts/interfacesV0/ICurveAddressProvider.sol";
-import { IERC20 } from "@openzeppelin/contracts/token/ERC20/IERC20.sol";
+import { IERC20 } from "@openzeppelin/contracts-0.8.x/token/ERC20/IERC20.sol";
 import { IAdapter, IAdapterV2 } from "../../utils/interfaces/IAdapterV2.sol";
 import { IAdapterHarvestReward, IAdapterHarvestRewardV2 } from "../../utils/interfaces/IAdapterHarvestRewardV2.sol";
 import "@optyfi/defi-legos/interfaces/defiAdapters/contracts/IAdapterInvestLimit.sol";
