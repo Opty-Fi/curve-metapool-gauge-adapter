@@ -12,7 +12,7 @@ import { AdapterModifiersBase } from "../../utils/AdapterModifiersBase.sol";
 //  interfaces
 import { ICurveLiquidityGaugeV3 } from "@optyfi/defi-legos/ethereum/curve/contracts/ICurveLiquidityGaugeV3.sol";
 import { ICurveRegistry } from "@optyfi/defi-legos/ethereum/curve/contracts/interfacesV0/ICurveRegistry.sol";
-import { ICurveAddressProvider } from "@optyfi/defi-legos/ethereum/curve/contracts/interfacesV0/ICurveAddressProvider.sol";
+import "@optyfi/defi-legos/ethereum/curve/contracts/interfacesV0/ICurveAddressProvider.sol";
 import { IERC20 } from "@openzeppelin/contracts-0.8.x/token/ERC20/IERC20.sol";
 import { IAdapter, IAdapterV2 } from "../../utils/interfaces/IAdapterV2.sol";
 import { IAdapterHarvestReward, IAdapterHarvestRewardV2 } from "../../utils/interfaces/IAdapterHarvestRewardV2.sol";
