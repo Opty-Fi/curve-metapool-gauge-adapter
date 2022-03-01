@@ -3,10 +3,6 @@
 
 pragma solidity =0.8.11;
 
-/////////////////////////////////////////////////////
-/// PLEASE DO NOT USE THIS CONTRACT IN PRODUCTION ///
-/////////////////////////////////////////////////////
-
 //  libraries
 import { Address } from "@openzeppelin/contracts/utils/Address.sol";
 
@@ -68,7 +64,6 @@ contract CurveMetapoolGaugeAdapter is IAdapterV2, IAdapterHarvestRewardV2, IAdap
      * @inheritdoc IAdapterInvestLimit
      */
     function setMaxDepositPoolPct(address _gauge, uint256 _maxDepositPoolPct) external override onlyRiskOperator {
-        require(_gauge.isContract(), "!isContract");
         maxDepositPoolPct[_gauge] = _maxDepositPoolPct;
         emit LogMaxDepositPoolPct(maxDepositPoolPct[_gauge], msg.sender);
     }
@@ -78,11 +73,9 @@ contract CurveMetapoolGaugeAdapter is IAdapterV2, IAdapterHarvestRewardV2, IAdap
      */
     function setMaxDepositAmount(
         address _gauge,
-        address _underlyingToken,
+        address,
         uint256 _maxDepositAmount
     ) external override onlyRiskOperator {
-        require(_gauge.isContract(), "!_gauge.isContract()");
-        require(_underlyingToken.isContract(), "!_underlyingToken.isContract()");
         maxDepositAmount[_gauge] = _maxDepositAmount;
         emit LogMaxDepositAmount(maxDepositAmount[_gauge], msg.sender);
     }
