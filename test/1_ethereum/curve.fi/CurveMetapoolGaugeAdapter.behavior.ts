@@ -63,7 +63,7 @@ export function shouldBehaveLikeCurveMetapoolGaugeAdapter(token: string, pool: P
     const actualRewardTokens = (await this.curveMetapoolGaugeAdapter.getRewardTokens(pool.pool)).map((token: string) =>
       getAddress(token),
     );
-    let gaugeRewardTokens = [];
+    const gaugeRewardTokens = [];
     for (let i = 0; i < 8; i++) {
       gaugeRewardTokens.push(await curveMetapoolGaugeInstance.reward_tokens(i));
     }
