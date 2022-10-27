@@ -26,6 +26,8 @@ export function shouldBehaveLikeCurveMetapoolGaugeAdapter(token: string, pool: P
       console.log("Skipping because total supply is zero");
       this.skip();
     }
+    const tx = await this.testDeFiAdapter.giveAllowances([tokenInstance.address], [curveMetapoolGaugeInstance.address]);
+    await tx.wait();
     // 1. deposit all underlying tokens
     await this.testDeFiAdapter.testGetDepositAllCodes(
       pool.tokens[0],

@@ -1,4 +1,5 @@
 // solhint-disable no-unused-vars
+// solhint-disable no-empty-blocks
 // SPDX-License-Identifier: agpl-3.0
 
 pragma solidity =0.8.11;
@@ -16,7 +17,6 @@ import "@optyfi/defi-legos/ethereum/curve/contracts/interfacesV0/ICurveAddressPr
 import { IERC20 } from "@openzeppelin/contracts-0.8.x/token/ERC20/IERC20.sol";
 import { IAdapter, IAdapterV2 } from "../../utils/interfaces/IAdapterV2.sol";
 import { IAdapterHarvestReward, IAdapterHarvestRewardV2 } from "../../utils/interfaces/IAdapterHarvestRewardV2.sol";
-import "@optyfi/defi-legos/interfaces/defiAdapters/contracts/IAdapterInvestLimit.sol";
 import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
 
 /**
@@ -25,11 +25,8 @@ import "@uniswap/v2-periphery/contracts/interfaces/IUniswapV2Router02.sol";
  * @dev Abstraction layer to Curve's metapool gauges
  */
 
-contract CurveMetapoolGaugeAdapter is IAdapterV2, IAdapterHarvestRewardV2, IAdapterInvestLimit, AdapterModifiersBase {
+contract CurveMetapoolGaugeAdapter is IAdapterV2, IAdapterHarvestRewardV2, AdapterModifiersBase {
     using Address for address;
-
-    /** @notice max deposit value datatypes */
-    MaxExposure public maxDepositProtocolMode;
 
     /**
      * @notice Uniswap V2 router contract address
@@ -46,55 +43,7 @@ contract CurveMetapoolGaugeAdapter is IAdapterV2, IAdapterHarvestRewardV2, IAdap
      */
     address public constant MINTER = address(0xd061D61a4d941c39E5453435B6345Dc261C2fcE0);
 
-    /** @notice max deposit's default value in percentage */
-    uint256 public maxDepositProtocolPct; // basis points
-
-    /** @notice  Maps liquidityPool to max deposit value in percentage */
-    mapping(address => uint256) public maxDepositPoolPct; // basis points
-
-    /** @notice Maps liquidityPool to absolute max deposit value in underlying */
-    mapping(address => uint256) public maxDepositAmount;
-
-    constructor(address _registry) AdapterModifiersBase(_registry) {
-        maxDepositProtocolPct = uint256(10000); // 100% (basis points)
-        maxDepositProtocolMode = MaxExposure.Pct;
-    }
-
-    /**
-     * @inheritdoc IAdapterInvestLimit
-     */
-    function setMaxDepositPoolPct(address _gauge, uint256 _maxDepositPoolPct) external override onlyRiskOperator {
-        maxDepositPoolPct[_gauge] = _maxDepositPoolPct;
-        emit LogMaxDepositPoolPct(maxDepositPoolPct[_gauge], msg.sender);
-    }
-
-    /**
-     * @inheritdoc IAdapterInvestLimit
-     */
-    function setMaxDepositAmount(
-        address _gauge,
-        address,
-        uint256 _maxDepositAmount
-    ) external override onlyRiskOperator {
-        maxDepositAmount[_gauge] = _maxDepositAmount;
-        emit LogMaxDepositAmount(maxDepositAmount[_gauge], msg.sender);
-    }
-
-    /**
-     * @inheritdoc IAdapterInvestLimit
-     */
-    function setMaxDepositProtocolMode(MaxExposure _mode) external override onlyRiskOperator {
-        maxDepositProtocolMode = _mode;
-        emit LogMaxDepositProtocolMode(maxDepositProtocolMode, msg.sender);
-    }
-
-    /**
-     * @inheritdoc IAdapterInvestLimit
-     */
-    function setMaxDepositProtocolPct(uint256 _maxDepositProtocolPct) external override onlyRiskOperator {
-        maxDepositProtocolPct = _maxDepositProtocolPct;
-        emit LogMaxDepositProtocolPct(maxDepositProtocolPct, msg.sender);
-    }
+    constructor(address _registry) AdapterModifiersBase(_registry) {}
 
     /**
      * @inheritdoc IAdapter
@@ -229,22 +178,13 @@ contract CurveMetapoolGaugeAdapter is IAdapterV2, IAdapterHarvestRewardV2, IAdap
      */
     function getDepositSomeCodes(
         address payable,
-        address _underlyingToken,
+        address,
         address _gauge,
         uint256 _amount
-    ) public view override returns (bytes[] memory _codes) {
-        uint256 _depositAmount = _getDepositAmount(_gauge, _underlyingToken, _amount);
-        if (_depositAmount > 0) {
-            _codes = new bytes[](3);
-            _codes[0] = abi.encode(
-                _underlyingToken,
-                abi.encodeWithSignature("approve(address,uint256)", _gauge, uint256(0))
-            );
-            _codes[1] = abi.encode(
-                _underlyingToken,
-                abi.encodeWithSignature("approve(address,uint256)", _gauge, _amount)
-            );
-            _codes[2] = abi.encode(_gauge, abi.encodeWithSignature("deposit(uint256)", _amount));
+    ) public pure override returns (bytes[] memory _codes) {
+        if (_amount > 0) {
+            _codes = new bytes[](1);
+            _codes[0] = abi.encode(_gauge, abi.encodeWithSignature("deposit(uint256)", _amount));
         }
     }
 
@@ -391,37 +331,6 @@ contract CurveMetapoolGaugeAdapter is IAdapterV2, IAdapterHarvestRewardV2, IAdap
      */
     function _getMinter() internal pure returns (address) {
         return MINTER;
-    }
-
-    /**
-     * @dev Returns the maximum allowed deposit amount considering the percentage limit or the absolute limit
-     * @param _gauge Liquidity pool's contract address
-     * @param _amount The amount of the underlying token to be deposited
-     * @return Returns the maximum deposit allowed according to _amount and the limits set
-     */
-    function _getDepositAmount(
-        address _gauge,
-        address,
-        uint256 _amount
-    ) internal view returns (uint256) {
-        uint256 _limit = maxDepositProtocolMode == MaxExposure.Pct
-            ? _getMaxDepositAmountByPct(_gauge)
-            : maxDepositAmount[_gauge];
-        return _amount > _limit ? _limit : _amount;
-    }
-
-    /**
-     * @dev Returns the maximum allowed deposit amount when the adapter is in percentage mode
-     * @param _gauge Liquidity pool's contract address
-     * @return Returns the maximum deposit allowed according to _amount and the limits set
-     */
-    function _getMaxDepositAmountByPct(address _gauge) internal view returns (uint256) {
-        uint256 _poolValue = getPoolValue(_gauge, address(0));
-        uint256 _poolPct = maxDepositPoolPct[_gauge];
-        uint256 _limit = _poolPct == 0
-            ? (_poolValue * maxDepositProtocolPct) / (uint256(10000))
-            : (_poolValue * _poolPct) / (uint256(10000));
-        return _limit;
     }
 
     /**
