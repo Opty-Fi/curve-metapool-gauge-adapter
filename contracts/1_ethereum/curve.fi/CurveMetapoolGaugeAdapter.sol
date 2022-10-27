@@ -221,7 +221,7 @@ contract CurveMetapoolGaugeAdapter is IAdapterV2, IAdapterHarvestRewardV2, IAdap
      * @inheritdoc IAdapter
      */
     function canStake(address) public pure override returns (bool) {
-        return true;
+        return false;
     }
 
     /**
